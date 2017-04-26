@@ -1,0 +1,48 @@
+# Learn more about services, parameters and containers at
+# http://symfony.com/doc/current/service_container.html
+parameters:
+    import_batch_size: 1000
+
+services:
+
+    import.reader.csv:
+        class: AppBundle\Service\Importer\Reader\CSVReader
+
+
+    import.reader.csv.users:
+        class: AppBundle\Service\Importer\Reader\CSVReader
+        calls:
+            - method: setOptions
+              arguments: [ { delimiter: ";", skipFirstLines: 1 } ]
+
+
+    import.writer.users:
+        class: AppBundle\Service\Importer\Writer\UsersWriter
+        calls:
+            - method: setEntityManager
+              arguments: [ '@doctrine.orm.entity_manager' ]
+
+
+    import.writer.users.bulk:
+        class: AppBundle\Service\Importer\Writer\BulkUsersWriter
+        arguments: ['%import_batch_size%']
+        calls:
+            - method: setEntityManager
+              arguments: [ '@doctrine.orm.entity_manager' ]
+
+
+    import.strategy.users.standard:
+        class: AppBundle\Service\Importer\Strategy\StandardStrategy
+        arguments: ['@import.reader.csv.users', '@import.writer.users.bulk']
+        calls:
+#            - method: setLogger
+#              arguments: [ '@logger' ]
+
+
+    import.users:
+        class: AppBundle\Service\Importer\UsersImporter
+        calls:
+            - method: setContainer
+              arguments: [ '@service_container' ]
+
+

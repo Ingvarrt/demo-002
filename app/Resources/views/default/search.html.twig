@@ -1,0 +1,141 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-4">
+            {{ form_start(form, {name: null, attr: {id: 'form_search'}}) }}
+            {{ form_widget(form) }}
+            <div class="form-group">
+                <button type="button" class="btn btn-lg btn-success" id="do-search">Search</button>
+            </div>
+            <input type="hidden" name="{{ form.vars.name }}[page]" id="page" value="0"/>
+            {{ form_end(form) }}
+        </div>
+        <div class="col-md-8"><div class="panel" id="results-container">
+        </div></div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.min.js"></script>
+
+    {% verbatim %}
+    <script id="user-template" type="text/template">
+        {{#data}}
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="row">
+                            <div class="col-md-5"><strong>Name:</strong></div>
+                            <div class="col-md-7">{{ firstName }} {{ lastName }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5"><strong>Birthday:</strong></div>
+                            <div class="col-md-7">{{ birthday }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5"><strong>Age:</strong></div>
+                            <div class="col-md-7">{{ age }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5"><strong>Email:</strong></div>
+                            <div class="col-md-7">{{ email }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5"><strong>Phone:</strong></div>
+                            <div class="col-md-7">{{ phone }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5"><strong>Home Address:</strong></div>
+                            <div class="col-md-7">{{ homeCity }}, {{ homeZip}}, {{ homeAddress }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5"><strong>Company:</strong></div>
+                            <div class="col-md-7">{{ CompanyName }} {{ companyName }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5"><strong>Company Address:</strong></div>
+                            <div class="col-md-7">{{ workCity }}, {{ workAddress }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5"><strong>Job Position:</strong></div>
+                            <div class="col-md-7">{{ position }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        {{cv}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/data}}
+    </script>
+    <script id="pagination-template" type="text/template">
+        <nav aria-label="...">
+            <ul class="pager">
+                <li><a href="#" id="prev_btn"{{#first}} class="btn disabled"{{/first}}>Previous</a></li>
+                <li><a href="#" id="next_btn"{{#last}} class="btn disabled"{{/last}}>Next</a></li>
+            </ul>
+        </nav>
+    </script>
+    {% endverbatim %}
+
+    <script>
+    $(document).ready(function() {
+        $('.js-datepicker').datepicker({
+            dateFormat: 'yy-mm-dd'
+        });
+
+        var $page = $('#page');
+        var $form = $('#form_search');
+        var $container = $('#results-container');
+
+        $('#do-search').on('click', function () {
+            $(this).closest('form').submit();
+        });
+
+        var searchHandler = function() {
+            $.post(
+                "{{ url('search') }}",
+                $form.serialize()
+            ).done(function(data) {
+                var template = $('#user-template').html();
+                var list = Mustache.render(template, {'data': data.data, 'cnt': data.cnt});
+
+                template = $('#pagination-template').html();
+                var pagination = Mustache.render(template, {'first': data.page == 0, 'last': data.page == data.pages});
+
+                $container.html('')
+                    .append(list)
+                    .append(pagination)
+                ;
+            });
+        };
+
+        $container.on('click', '#prev_btn', function(event) {
+            event.preventDefault();
+            $page.val(parseInt($page.val()) - 1);
+            searchHandler();
+        });
+
+        $container.on('click', '#next_btn', function(event) {
+            event.preventDefault();
+            $page.val(parseInt($page.val()) + 1);
+            searchHandler();
+        });
+
+        $form.on('submit', function(event) {
+            event.preventDefault();
+            $page.val(0);
+            searchHandler();
+        });
+
+    });
+    </script>
+{% endblock %}

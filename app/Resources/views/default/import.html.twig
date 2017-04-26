@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% for type, flash_messages in app.session.flashBag.all %}
+        {% for flash_message in flash_messages %}
+            <div class="alert alert-{{ type }}">
+                {{ flash_message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}
