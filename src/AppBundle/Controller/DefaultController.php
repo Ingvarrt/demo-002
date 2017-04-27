@@ -58,10 +58,10 @@ class DefaultController extends Controller
 
                 $importer->import($file->getPathname());
 
-                $time = (microtime(true) - $time) * 1000;
+                $time = microtime(true) - $time;
                 $this->addFlash(
                     FlashMessage::TYPE_INfO,
-                    sprintf('Import is complete. (%d secs spent)', (int) round($time))
+                    sprintf('Import is complete. (%.3f secs spent)', round($time, 3))
                 );
 
             } catch (ImportException $e) {

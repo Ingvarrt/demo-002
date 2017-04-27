@@ -42,11 +42,13 @@ class UsersImportCommand extends Command
         /** @var UsersImporter $importer */
         $importer = $this->getApplication()->getKernel()->getContainer()->get('import.users');
 
+        $output->writeln('start import');
         $time = microtime(true);
-        $importer->import($file);
-        $time = (microtime(true) - $time) * 1000;
 
-        $output->writeln(sprintf('Import is complete. (%d secs spent)', (int) round($time)));
+        $importer->import($file);
+
+        $time = microtime(true) - $time;
+        $output->writeln(sprintf('Import is complete. (%.3f secs spent)', round($time, 3)));
 
         return 0;
     }

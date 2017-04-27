@@ -9,6 +9,7 @@ class StandardStrategy extends AbstractStrategy
      */
     public function import()
     {
+        $this->writer->prepare();
         foreach ($this->reader as $data) {
             if ($this->writer->process($data)) {
                 $this->logDebug('Data process ok', $data);

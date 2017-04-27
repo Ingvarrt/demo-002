@@ -10,6 +10,7 @@ class IgnoreErrorsStrategy extends AbstractStrategy
     public function import()
     {
         try {
+            $this->writer->prepare();
             foreach ($this->reader as $data) {
                 if ($this->writer->process($data)) {
                     $this->logDebug('Data process ok', $data);
@@ -17,6 +18,7 @@ class IgnoreErrorsStrategy extends AbstractStrategy
                     $this->logError('Data process fail', $data);
                 }
             }
+            $this->writer->finish();
         } catch (\Exception $e) {
             $this->logError($e->getMessage());
         }
